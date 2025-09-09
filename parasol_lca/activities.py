@@ -341,7 +341,7 @@ def ensure_inverter(conf: Config):
     inverter_2500W_with_recycling = agb.copyActivity(
         db_name  = conf.target_database,
         activity=inverter_2500W,
-        code="{conf.prefix}inverter production with recycling, 2.5kW")
+        code=f"{conf.prefix}inverter production with recycling, 2.5kW")
 
     # Add recycling
     amount_alu = inverter_2500W.getAmount('aluminium, cast alloy*')
@@ -366,7 +366,7 @@ def ensure_inverter(conf: Config):
     inverter_500kW_with_recycling = agb.copyActivity(
         db_name  = conf.target_database,
         activity=inverter_500kW,
-        code="{conf.prefix}inverter production with recycling, 500kW")
+        code=f"{conf.prefix}inverter production with recycling, 500kW")
 
     # Add recycling
     amount_alu = inverter_500kW.getAmount('aluminium, cast alloy*')
