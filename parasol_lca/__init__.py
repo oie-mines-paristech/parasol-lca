@@ -71,4 +71,4 @@ def create(conf : Config|dict):
     if isinstance(conf, dict):
         conf = Config.from_dict(conf)
     #ensure_metalisation(conf)
-    activities.ensure_impact_model_per_kWh(conf)
+    activities._ensure_impact_model_per_kWh(conf)

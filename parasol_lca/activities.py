@@ -30,7 +30,7 @@ def get_acurate_activities(db_name, filters : dict):
     return [get_activity(key) for key in bw.Database(db_name).query(*[Filter(k, "==", v) for k, v in filters.items()])]
 
 
-def ensure_electricity(conf):
+def _ensure_electricity(conf):
     """Create the electricity dataset and related activities.
     Activities of the market and market group for electricity, medium voltage,
     are recovered from the ecoinvent database for France (FR), Europe (EU),
@@ -125,7 +125,7 @@ def ensure_electricity(conf):
     )
 
 
-def ensure_mounting(conf):
+def _ensure_mounting(conf):
     """Create the mounting system dataset and related activities.
     Paramaterizes the ecoinvent photovoltaic mounting system production
     activity by including the parameters related to the total weight of the
@@ -206,7 +206,7 @@ def ensure_mounting(conf):
     return act2
 
 
-def ensure_electrical_installation(conf):
+def _ensure_electrical_installation(conf):
     """Creates the electrical installation dataset and related activities.
     The electrical installation consists of cables, fuse box,
     lightning protection, etc. without the inverter.
@@ -242,7 +242,7 @@ def ensure_electrical_installation(conf):
     )
 
 
-def ensure_inverter(conf):
+def _ensure_inverter(conf):
     """Creates the inverter dataset and related activities.
     The representative flow of the inverter activity is the production of
     1 kg of inverter.
@@ -363,7 +363,7 @@ def ensure_inverter(conf):
     )
 
 
-def ensure_metalisation(conf):
+def _ensure_metalisation(conf):
     """Creates the metalisation dataset and related activities.
     Needed for the silicon dataset.
 
@@ -406,7 +406,7 @@ def ensure_metalisation(conf):
     return metal_paste_copper
 
 
-def ensure_silicon(conf):
+def _ensure_silicon(conf):
     """Creates the silicon dataset and related activities.
     Updates the dataset with the findings of Besseau et al. (2023)
 
@@ -427,7 +427,7 @@ def ensure_silicon(conf):
     if len(act) > 1:
         raise Exception(f"Error: Unexpected multiples activities {ACTIVITY_NAME}")
 
-    elec_switch_act = ensure_electricity(conf)
+    elec_switch_act = _ensure_electricity(conf)
 
     # ## Silicon production
 
@@ -731,7 +731,7 @@ def ensure_silicon(conf):
     return wafer_adjusted
 
 
-def ensure_pv_cell_manufacturing(conf):
+def _ensure_pv_cell_manufacturing(conf):
     """Create the PV cell manufacturing dataset and related activities.
 
     Parameters
@@ -751,8 +751,8 @@ def ensure_pv_cell_manufacturing(conf):
     if len(act) > 1:
         raise Exception(f"Error: Unexpected multiples activities {ACTIVITY_NAME}")
 
-    wafer_adjusted = ensure_silicon(conf)
-    elec_switch_act = ensure_electricity(conf)
+    wafer_adjusted = _ensure_silicon(conf)
+    elec_switch_act = _ensure_electricity(conf)
 
     # ## PV cell manufacturing
 
@@ -795,7 +795,7 @@ def ensure_pv_cell_manufacturing(conf):
     return cell_adjusted
 
 
-def ensure_pv_panel(conf):
+def _ensure_pv_panel(conf):
     """
     Create the PV panel manufacturing dataset and related activities.
 
@@ -818,7 +818,7 @@ def ensure_pv_panel(conf):
     if len(act) > 1:
         raise Exception(f"Error: Unexpected multiples activities {ACTIVITY_NAME}")
 
-    elec_switch_act = ensure_electricity(conf)
+    elec_switch_act = _ensure_electricity(conf)
     # Define Max with abs() for later vector processing in numpy (sympy.Max is badly transformed)
     front_silver_amount = agb.Max(7.4e-3 * (p.silver_amount - 0.7)  / (6.2 + 3.3), 0)
     new_front_silver_amount = 0.84 * front_silver_amount
@@ -832,7 +832,7 @@ def ensure_pv_panel(conf):
 
     panel_init = agb.findActivity('photovoltaic panel production, multi-Si wafer', 'RER', db_name=conf.technosphere)
 
-    cell_adjusted = ensure_pv_cell_manufacturing(conf)
+    cell_adjusted = _ensure_pv_cell_manufacturing(conf)
 
     # +
     # Activities
@@ -884,7 +884,7 @@ def ensure_pv_panel(conf):
     return panel_adjusted
 
 
-def ensure_pv_system(conf):
+def _ensure_pv_system(conf):
     """Creates the PV system dataset and related activities.
     It is composed of the mounting system, electrical installation, inverter,
     PV panel, and transport-related activities.
@@ -905,10 +905,10 @@ def ensure_pv_system(conf):
     if len(act) > 1:
         raise Exception(f"Error: Unexpected multiples activities {ACTIVITY_NAME}")
 
-    mounting_system = ensure_mounting(conf)
-    elec_install = ensure_electrical_installation(conf)
-    inverter_per_kg = ensure_inverter(conf)
-    panel_adjusted = ensure_pv_panel(conf)
+    mounting_system = _ensure_mounting(conf)
+    elec_install = _ensure_electrical_installation(conf)
+    inverter_per_kg = _ensure_inverter(conf)
+    panel_adjusted = _ensure_pv_panel(conf)
 
     # ## PV system
 
@@ -967,7 +967,7 @@ def ensure_pv_system(conf):
     return system_PV
 
 
-def ensure_impact_model_per_kWp(conf):
+def _ensure_impact_model_per_kWp(conf):
     """Create the impact model with a functional unit of having an installed
     capacity of 1 kWp
 
@@ -989,7 +989,7 @@ def ensure_impact_model_per_kWp(conf):
         raise Exception(f"Error: Unexpected multiples activities {ACTIVITY_NAME}")
 
     # ## per kWp
-    system_PV = ensure_pv_system(conf)
+    system_PV = _ensure_pv_system(conf)
 
     # Impact model, per kWp
     impact_per_kWp = agb.newActivity(
@@ -1003,7 +1003,7 @@ def ensure_impact_model_per_kWp(conf):
     return impact_per_kWp
 
 
-def ensure_impact_model_per_kWh(conf):
+def _ensure_impact_model_per_kWh(conf):
     """Create the impact model with a functional unit of the production of
     1 kWh of electricity
 
@@ -1025,7 +1025,7 @@ def ensure_impact_model_per_kWh(conf):
         raise Exception(f"Error: Unexpected multiples activities {ACTIVITY_NAME}")
 
     # ## per kWh
-    impact_per_kWp = ensure_impact_model_per_kWp(conf)
+    impact_per_kWp = _ensure_impact_model_per_kWp(conf)
     impact_per_kWh = agb.newActivity(
         db_name = conf.target_database,
         name = ACTIVITY_NAME,
