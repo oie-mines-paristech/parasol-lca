@@ -349,13 +349,3 @@ def _ensure_kWhperkWp(context):
     group = "PV operation",
     unit = "kWh/kWp/year",
     description = "Durée de vie")
-
-
-import re
-from types import SimpleNamespace
-for k, v in list(globals().items()):
-    m = re.match("^_ensure_(.+)$", k)
-    if m is None: continue
-    name = m.group(1)
-    if name in globals(): continue
-    globals()[name] = v(SimpleNamespace(target_database = None))
