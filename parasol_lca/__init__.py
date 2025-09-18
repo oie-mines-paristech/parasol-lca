@@ -54,7 +54,7 @@ class ParasolLCA:
 
     def __getattr__(self, name):
         handler_name = f"_ensure_{name}"
-        if handler_name not in parameters.__dict__:
+        if not hasattr(parameters, handler_name):
             raise AttributeError(f"Attribute {name} not found in ParasolLCA!")
         setattr(self, name, getattr(parameters, handler_name)(self))
         # Should work
