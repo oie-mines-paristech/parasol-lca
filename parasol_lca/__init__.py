@@ -3,10 +3,10 @@ from . import activities
 from . import parameters
 from . import activities
 
-class Config:
+class ParasolLCA:
     def __init__(self, target_database, version):
         """
-        Create new config
+        Create new ParasolLCA
 
         Parameters
         ----------
@@ -17,7 +17,7 @@ class Config:
 
         Returns
         -------
-        config
+        ParasolLCA
 
         """
         self.prefix = "[parasol] "
@@ -29,7 +29,7 @@ class Config:
     @staticmethod
     def from_dict(d : dict):
         """
-        Create config from dictionnary
+        Create ParasolLCA from dictionnary
 
         Parameters
         ----------
@@ -43,10 +43,10 @@ class Config:
 
         Returns
         -------
-        config
+        ParasolLCA
 
         """
-        conf = Config(d["target_database"], d["version"])
+        conf = ParasolLCA(d["target_database"], d["version"])
         conf.prefix = d.get("prefix", conf.prefix)
         conf.biosphere = d.get("biosphere", conf.biosphere)
         conf.technosphere = d.get("technosphere", conf.technosphere)
@@ -55,13 +55,13 @@ class Config:
     def __getattr__(self, name):
         handler_name = f"_ensure_{name}"
         if handler_name not in parameters.__dict__:
-            raise AttributeError(f"Attribute {name} not found in Config!")
+            raise AttributeError(f"Attribute {name} not found in ParasolLCA!")
         setattr(self, name, getattr(parameters, handler_name)(self))
         # Should work
         return getattr(self, name)
 
 
-def create(conf : Config|dict):
+def create(conf : ParasolLCA|dict):
     """Create the updated PV system dataset, related activities, and 2 impact
     models with PARASOL_LCA.
 
@@ -77,7 +77,7 @@ def create(conf : Config|dict):
 
     """
     if isinstance(conf, dict):
-        conf = Config.from_dict(conf)
+        conf = ParasolLCA.from_dict(conf)
     #ensure_metalisation(conf)
     activities._ensure_impact_model_per_kWh(conf)
     return conf
