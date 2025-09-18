@@ -25,65 +25,12 @@ from . import parameters as p
 import brightway2 as bw
 from bw2data.utils import get_activity
 from bw2data.query import Filter
-from types import SimpleNamespace
-from copy import copy
-
-
-class Config:
-    def __init__(self, target_database, version):
-        """
-        Create new config
-
-        Parameters
-        ----------
-        target_database : str
-            Name of the database to use to store parasol activities
-        version : str
-            Version string of ecoinvent database such as "3.7", "3.9" ...
-
-        Returns
-        -------
-        config
-
-        """
-        self.prefix = "[parasol] "
-        self.version = version
-        self.target_database = target_database
-        self.biosphere = f"ecoinvent-{version}-biosphere"
-        self.technosphere = f"ecoinvent-{version}-cutoff"
-
-    @staticmethod
-    def from_dict(d : dict):
-        """
-        Create config from dictionnary
-
-        Parameters
-        ----------
-        d : dict
-        expected keys:
-            - target_database = database to use to store new activities (string)
-            - version = ecoinvent version used (string)
-            - (optional) prefix = prefix for created activities (string)
-            - (optional) biosphere = biosphere database name (string)
-            - (optional) technosphere = technosphere database name (string)
-
-        Returns
-        -------
-        config
-
-        """
-        conf = Config(d["target_database"], d["version"])
-        conf.prefix = d.get("prefix", conf.prefix)
-        conf.biosphere = d.get("biosphere", conf.biosphere)
-        conf.technosphere = d.get("technosphere", conf.technosphere)
-        return conf
-
 
 def get_acurate_activities(db_name, filters : dict):
     return [get_activity(key) for key in bw.Database(db_name).query(*[Filter(k, "==", v) for k, v in filters.items()])]
 
 
-def ensure_electricity(conf: Config):
+def ensure_electricity(conf):
     """Create the electricity dataset and related activities.
     Activities of the market and market group for electricity, medium voltage,
     are recovered from the ecoinvent database for France (FR), Europe (EU),
@@ -98,7 +45,7 @@ def ensure_electricity(conf: Config):
 
     Parameters
     ----------
-    conf: Config
+    conf
         see. help(Config)
 
     Returns
@@ -178,7 +125,7 @@ def ensure_electricity(conf: Config):
     )
 
 
-def ensure_mounting(conf: Config):
+def ensure_mounting(conf):
     """Create the mounting system dataset and related activities.
     Paramaterizes the ecoinvent photovoltaic mounting system production
     activity by including the parameters related to the total weight of the
@@ -187,7 +134,7 @@ def ensure_mounting(conf: Config):
 
     Parameters
     ----------
-    conf: Config
+    conf
         see. help(Config)
 
     Returns
@@ -259,14 +206,14 @@ def ensure_mounting(conf: Config):
     return act2
 
 
-def ensure_electrical_installation(conf: Config):
+def ensure_electrical_installation(conf):
     """Creates the electrical installation dataset and related activities.
     The electrical installation consists of cables, fuse box,
     lightning protection, etc. without the inverter.
 
     Parameters
     ----------
-    conf: Config
+    conf
         see. help(Config)
     """
     ACTIVITY_NAME = f'{conf.prefix}photovoltaics, electric installation per kg'
@@ -295,14 +242,14 @@ def ensure_electrical_installation(conf: Config):
     )
 
 
-def ensure_inverter(conf: Config):
+def ensure_inverter(conf):
     """Creates the inverter dataset and related activities.
     The representative flow of the inverter activity is the production of
     1 kg of inverter.
 
     Parameters
     ----------
-    conf: Config
+    conf
         see. help(Config)
 
     Returns
@@ -416,13 +363,13 @@ def ensure_inverter(conf: Config):
     )
 
 
-def ensure_metalisation(conf: Config):
+def ensure_metalisation(conf):
     """Creates the metalisation dataset and related activities.
     Needed for the silicon dataset.
 
     Parameters
     ----------
-    conf: Config
+    conf
         see. help(Config)
 
     Returns
@@ -459,13 +406,13 @@ def ensure_metalisation(conf: Config):
     return metal_paste_copper
 
 
-def ensure_silicon(conf: Config):
+def ensure_silicon(conf):
     """Creates the silicon dataset and related activities.
     Updates the dataset with the findings of Besseau et al. (2023)
 
     Parameters
     ----------
-    conf: Config
+    conf
         see. help(Config)
 
     Returns
@@ -784,12 +731,12 @@ def ensure_silicon(conf: Config):
     return wafer_adjusted
 
 
-def ensure_pv_cell_manufacturing(conf: Config):
+def ensure_pv_cell_manufacturing(conf):
     """Create the PV cell manufacturing dataset and related activities.
 
     Parameters
     ----------
-    conf: Config
+    conf
         see. help(Config)
 
     Returns
@@ -848,13 +795,13 @@ def ensure_pv_cell_manufacturing(conf: Config):
     return cell_adjusted
 
 
-def ensure_pv_panel(conf: Config):
+def ensure_pv_panel(conf):
     """
     Create the PV panel manufacturing dataset and related activities.
 
     Parameters
     ----------
-    conf: Config
+    conf
         see. help(Config)
 
     Returns
@@ -937,14 +884,14 @@ def ensure_pv_panel(conf: Config):
     return panel_adjusted
 
 
-def ensure_pv_system(conf: Config):
+def ensure_pv_system(conf):
     """Creates the PV system dataset and related activities.
     It is composed of the mounting system, electrical installation, inverter,
     PV panel, and transport-related activities.
 
     Parameters
     ----------
-    conf: Config
+    conf
         see. help(Config)
 
     Returns
@@ -1020,13 +967,13 @@ def ensure_pv_system(conf: Config):
     return system_PV
 
 
-def ensure_impact_model_per_kWp(conf: Config):
+def ensure_impact_model_per_kWp(conf):
     """Create the impact model with a functional unit of having an installed
     capacity of 1 kWp
 
     Parameters
     ----------
-    conf: Config
+    conf
         see. help(Config)
 
     Returns
@@ -1056,13 +1003,13 @@ def ensure_impact_model_per_kWp(conf: Config):
     return impact_per_kWp
 
 
-def ensure_impact_model_per_kWh(conf : Config):
+def ensure_impact_model_per_kWh(conf):
     """Create the impact model with a functional unit of the production of
     1 kWh of electricity
 
     Parameters
     ----------
-    conf: Config
+    conf
         see. help(Config)
 
     Returns
@@ -1087,24 +1034,4 @@ def ensure_impact_model_per_kWh(conf : Config):
 
     return impact_per_kWh
 
-
-def create(conf : Config):
-    """Create the updated PV system dataset, related activities, and 2 impact
-    models with PARASOL_LCA.
-
-    Parameters
-    ----------
-    conf: dict
-        expected keys:
-            - target_database = database to use to store new activities (string)
-            - version = ecoinvent version used (string)
-            - (optional) prefix = prefix for created activities (string)
-            - (optional) biosphere = biosphere database name (string)
-            - (optional) technosphere = technosphere database name (string)
-
-    """
-    if isinstance(conf, dict):
-        conf = Config.from_dict(conf)
-    #ensure_metalisation(conf)
-    ensure_impact_model_per_kWh(conf)
 
