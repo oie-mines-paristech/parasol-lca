@@ -1,7 +1,6 @@
 # coding=utf-8
-from . import activities
 from . import _parameters
-from . import activities
+from . import _activities
 
 class ParasolLCA:
     def __init__(self, target_database, version):
@@ -79,5 +78,5 @@ def create(conf : ParasolLCA|dict):
     if isinstance(conf, dict):
         conf = ParasolLCA.from_dict(conf)
     #ensure_metalisation(conf)
-    activities._ensure_impact_model_per_kWh(conf)
+    _activities._ensure_impact_model_per_kWh(conf)
     return conf
