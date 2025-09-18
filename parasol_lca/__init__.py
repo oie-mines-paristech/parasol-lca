@@ -52,6 +52,14 @@ class Config:
         conf.technosphere = d.get("technosphere", conf.technosphere)
         return conf
 
+    def __getattr__(self, name):
+        handler_name = f"_ensure_{name}"
+        if handler_name not in parameters.__dict__:
+            raise AttributeError(f"Attribute {name} not found in Config!")
+        setattr(self, name, getattr(parameters, handler_name)(self))
+        # Should work
+        return getattr(self, name)
+
 
 def create(conf : Config|dict):
     """Create the updated PV system dataset, related activities, and 2 impact
@@ -72,3 +80,4 @@ def create(conf : Config|dict):
         conf = Config.from_dict(conf)
     #ensure_metalisation(conf)
     activities._ensure_impact_model_per_kWh(conf)
+    return conf

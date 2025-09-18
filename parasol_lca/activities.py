@@ -92,8 +92,8 @@ def _ensure_electricity(conf):
         db_name = conf.target_database,
         unit = "kWh",
         exchanges={
-            act_kWh_charbon: p.Electricity_mix_CO2_content,
-            act_kWh_hydro: 1-p.Electricity_mix_CO2_content
+            act_kWh_charbon: conf.Electricity_mix_CO2_content,
+            act_kWh_hydro: 1-conf.Electricity_mix_CO2_content
         }
     )
     act.setOutputAmount(1.0)
@@ -110,7 +110,7 @@ def _ensure_electricity(conf):
     return agb.newSwitchAct(
         name=ACTIVITY_NAME,
         dbname = conf.target_database,
-        paramDef = p.Manufacturing_electricity_mix,
+        paramDef = conf.Manufacturing_electricity_mix,
         acts_dict = {
             'FR' : elec_FR,
             'EU' : elec_EU,
@@ -181,9 +181,9 @@ def _ensure_mounting(conf):
 
     #Update the ground system activity (process) with exchanges that include the paramaters that we defined
     #Aluminum
-    m_alu = p.mounting_system_weight_alu
-    m_steel = p.mounting_system_weight_total - p.mounting_system_weight_alu - p.mounting_system_weight_wood
-    m_wood = p.mounting_system_weight_wood / 420.0 #420 kg/m3
+    m_alu = conf.mounting_system_weight_alu
+    m_steel = conf.mounting_system_weight_total - conf.mounting_system_weight_alu - conf.mounting_system_weight_wood
+    m_wood = conf.mounting_system_weight_wood / 420.0 #420 kg/m3
 
     #Alu
     act2.updateExchanges({"scrap aluminium*": None})
@@ -198,10 +198,10 @@ def _ensure_mounting(conf):
     act2.addExchanges({wood_act:m_wood})
 
     #GCR
-    act2.updateExchanges({"Transformation*": 1.0/p.ground_coverage_ratio * (1.0-p.roof_ratio)})
-    act2.updateExchanges({"Occupation*": 1.0/p.ground_coverage_ratio * p.lifetime * (1.0-p.roof_ratio)})
+    act2.updateExchanges({"Transformation*": 1.0/conf.ground_coverage_ratio * (1.0-conf.roof_ratio)})
+    act2.updateExchanges({"Occupation*": 1.0/conf.ground_coverage_ratio * conf.lifetime * (1.0-conf.roof_ratio)})
     #Concrete
-    act2.updateExchanges({'concrete*':0.000542 * (1.0-p.roof_ratio)})
+    act2.updateExchanges({'concrete*':0.000542 * (1.0-conf.roof_ratio)})
 
     return act2
 
@@ -304,10 +304,10 @@ def _ensure_inverter(conf):
         ], sum=True)
 
     inverter_2500W_with_recycling.addExchanges({
-        scrap_alu : amount_alu * p.recycling_rate,
-        scrap_coper : amount_copper * p.recycling_rate,
-        scrap_electronic : amount_electronic * p.recycling_rate,
-        scrap_steel : amount_steel * p.recycling_rate
+        scrap_alu : amount_alu * conf.recycling_rate,
+        scrap_coper : amount_copper * conf.recycling_rate,
+        scrap_electronic : amount_electronic * conf.recycling_rate,
+        scrap_steel : amount_steel * conf.recycling_rate
     })
 
     inverter_500kW_with_recycling = agb.copyActivity(
@@ -329,10 +329,10 @@ def _ensure_inverter(conf):
         ], sum=True)
 
     inverter_500kW_with_recycling.addExchanges({
-        scrap_alu : amount_alu * p.recycling_rate,
-        scrap_coper : amount_copper * p.recycling_rate,
-        scrap_electronic : amount_electronic * p.recycling_rate,
-        scrap_steel : amount_steel * p.recycling_rate
+        scrap_alu : amount_alu * conf.recycling_rate,
+        scrap_coper : amount_copper * conf.recycling_rate,
+        scrap_electronic : amount_electronic * conf.recycling_rate,
+        scrap_steel : amount_steel * conf.recycling_rate
     })
 
     inverter_2500W_per_kg = agb.newActivity(
@@ -353,7 +353,7 @@ def _ensure_inverter(conf):
     return agb.interpolate_activities(
         db_name = conf.target_database,
         act_name = ACTIVITY_NAME,
-        param=p.P_install,
+        param=conf.P_install,
         act_per_value={
             0.0: inverter_2500W_per_kg,
             2.5: inverter_2500W_per_kg,
@@ -472,10 +472,10 @@ def _ensure_silicon(conf):
     # Remove all electricity sources and replace them by the selected
     # electricity mix.
     silicon_adjusted.updateExchanges(updates={'electricity*': None})
-    silicon_adjusted.addExchanges({elec_switch_act: p.silicon_elec_intensity})
+    silicon_adjusted.addExchanges({elec_switch_act: conf.silicon_elec_intensity})
 
 
-    silicon_adjusted.updateExchanges({"heat*": p.silicon_heat_intensity})
+    silicon_adjusted.updateExchanges({"heat*": conf.silicon_heat_intensity})
     # -
 
     # #### Market for silicon solar grade
@@ -505,7 +505,7 @@ def _ensure_silicon(conf):
     #link to the parameterized MG Si dataset
     act_adjusted.updateExchanges({"silicon,*": None})
     act_adjusted.updateExchanges({"electricity, medium voltage*": elec_switch_act})
-    act_adjusted.updateExchanges({"electricity, medium voltage*": p.silicon_casting_elec_intensity})
+    act_adjusted.updateExchanges({"electricity, medium voltage*": conf.silicon_casting_elec_intensity})
     act_adjusted.addExchanges({silicon: 1.0})
 
     # ####  Market for Si casted
@@ -691,9 +691,9 @@ def _ensure_silicon(conf):
     # Formulas
 
     # Integrate gain in kerf loss for diamond wiring
-    kerf_loss_adapted = p.kerf_loss - 0.15 * p.diamond_wiring
-    sili_casting_amount = p.wafer_thickness * 1e-6 * 2328 / (1 - kerf_loss_adapted)
-    non_diamond_wiring = 1 - p.diamond_wiring
+    kerf_loss_adapted = conf.kerf_loss - 0.15 * conf.diamond_wiring
+    sili_casting_amount = conf.wafer_thickness * 1e-6 * 2328 / (1 - kerf_loss_adapted)
+    non_diamond_wiring = 1 - conf.diamond_wiring
 
     # Copy Wafer
     wafer = agb.findActivity("multi-Si wafer production", "RER", db_name=conf.technosphere)
@@ -711,20 +711,20 @@ def _ensure_silicon(conf):
             amount = sili_casting_amount,
             name='silicon production, adjusted'),
         #'tap water' : 0.006000 + diamond_wiring * 98.94,
-        'silicon carbide*' : non_diamond_wiring * 2.02988 * (1.0 - p.sic_recycled_share),
+        'silicon carbide*' : non_diamond_wiring * 2.02988 * (1.0 - conf.sic_recycled_share),
         'triethylene glycol*' : non_diamond_wiring * 2.16548 * (1.0 - teg_recycled_share)
     })
 
     wafer_adjusted.addExchanges({
         # Diamond wiring (see also Tap water updated above)
-        sintered_diamond_wire :  p.diamond_wiring * 0.0006075,
+        sintered_diamond_wire :  conf.diamond_wiring * 0.0006075,
         # Non -diamond wiring
-        silicon_carbide_recycled : non_diamond_wiring * 2.02988 * p.sic_recycled_share
+        silicon_carbide_recycled : non_diamond_wiring * 2.02988 * conf.sic_recycled_share
         })
 
     #Adapts the amount of electricity to be used
-    wafer_adjusted.updateExchanges({"electricity, medium voltage*": 8 * (1 - p.manufacturing_efficiency)})
-    wafer_adjusted.updateExchanges({"heat, district or industrial, natural gas*": 3.6 * (1 - p.manufacturing_efficiency)})
+    wafer_adjusted.updateExchanges({"electricity, medium voltage*": 8 * (1 - conf.manufacturing_efficiency)})
+    wafer_adjusted.updateExchanges({"heat, district or industrial, natural gas*": 3.6 * (1 - conf.manufacturing_efficiency)})
     #Adapts the dataset to be used
     wafer_adjusted.updateExchanges({"electricity*": elec_switch_act})
 
@@ -767,8 +767,8 @@ def _ensure_pv_cell_manufacturing(conf):
     # - The amount of copper is calculated considering the difference of conductivity between Ag and Cu
     # - Conductiviy of Ag = 6.3e7 S/m, Cu = 5.96e7 S/m at 20°C
 
-    front_silver_amount = agb.Max(7.4e-3 * (p.silver_amount - 0.7)  / (6.2 + 3.3), 0)
-    back_silver_amount = agb.Max(4.9e-3 * (p.silver_amount - 0.7)  / (6.2 + 3.3), 0)
+    front_silver_amount = agb.Max(7.4e-3 * (conf.silver_amount - 0.7)  / (6.2 + 3.3), 0)
+    back_silver_amount = agb.Max(4.9e-3 * (conf.silver_amount - 0.7)  / (6.2 + 3.3), 0)
 
     cell_adjusted = agb.copyActivity(db_name = conf.target_database,
                                      activity = cell_init,
@@ -788,7 +788,7 @@ def _ensure_pv_cell_manufacturing(conf):
         })
 
     #Adapt the quantity of electricity to use
-    cell_adjusted.updateExchanges({'electricity, medium voltage*': 30.243 * (1 - p.manufacturing_efficiency)})
+    cell_adjusted.updateExchanges({'electricity, medium voltage*': 30.243 * (1 - conf.manufacturing_efficiency)})
     #Adapt the dataset to use
     cell_adjusted.updateExchanges({'electricity, medium voltage*': elec_switch_act})
 
@@ -820,10 +820,10 @@ def _ensure_pv_panel(conf):
 
     elec_switch_act = _ensure_electricity(conf)
     # Define Max with abs() for later vector processing in numpy (sympy.Max is badly transformed)
-    front_silver_amount = agb.Max(7.4e-3 * (p.silver_amount - 0.7)  / (6.2 + 3.3), 0)
+    front_silver_amount = agb.Max(7.4e-3 * (conf.silver_amount - 0.7)  / (6.2 + 3.3), 0)
     new_front_silver_amount = 0.84 * front_silver_amount
 
-    back_silver_amount = agb.Max(4.9e-3 * (p.silver_amount - 0.7)  / (6.2 + 3.3), 0)
+    back_silver_amount = agb.Max(4.9e-3 * (conf.silver_amount - 0.7)  / (6.2 + 3.3), 0)
     new_back_silver_amount = 0.67 * back_silver_amount
     copper_amount = agb.Max(1/0.67 * 6.3e7 / 5.96e7 * ( 9.6e-3 -(new_front_silver_amount + new_back_silver_amount)), 0)
 
@@ -860,22 +860,22 @@ def _ensure_pv_panel(conf):
 
     # Adding recycling related dataset
     panel_adjusted.addExchanges({
-        scrapAlu : p.m_aluminium_frame * p.Recycling_rate_Al,
-        scrapCopper : amount_copper * p.Recycling_rate_Cu,
-        scrapGlass : p.glass_thickness * 2.5 * 1.0 * (1.0 + p.bifaciale) * p.recycling_rate_glass,
-        elec_switch_act : dict(name='elec for recycling', amount = p.electricity_recycling * (20e-3/1.6)),
-        heat_for_recycling : p.heat_recycling * (20e-3/1.6) / 3.6,
+        scrapAlu : conf.m_aluminium_frame * conf.Recycling_rate_Al,
+        scrapCopper : amount_copper * conf.Recycling_rate_Cu,
+        scrapGlass : conf.glass_thickness * 2.5 * 1.0 * (1.0 + conf.bifaciale) * conf.recycling_rate_glass,
+        elec_switch_act : dict(name='elec for recycling', amount = conf.electricity_recycling * (20e-3/1.6)),
+        heat_for_recycling : conf.heat_recycling * (20e-3/1.6) / 3.6,
     })
 
     # Update the exchanges
     panel_adjusted.updateExchanges({
-        'aluminium alloy, AlMg3*' : p.m_aluminium_frame,
-        'solar glass, low-iron*' : p.glass_thickness * 2.5 * 1.0 * (1.0 + p.bifaciale),
-        'tempering, flat glass*' : p.glass_thickness * 2.5 * 1.0 * (1.0 + p.bifaciale),
-        'ethylvinylacetate, foil*': 1.0017 * (1 + p.bifaciale),
-        'glass fibre reinforced plastic, polyamide, injection moulded*':0.18781 * (1.0 - p.bifaciale),
-        'polyethylene terephthalate, granulate, amorphous*':0.37297 * (1.0 - p.bifaciale),
-        'polyvinylfluoride, film*':0.1104 * (1.0 - p.bifaciale),
+        'aluminium alloy, AlMg3*' : conf.m_aluminium_frame,
+        'solar glass, low-iron*' : conf.glass_thickness * 2.5 * 1.0 * (1.0 + conf.bifaciale),
+        'tempering, flat glass*' : conf.glass_thickness * 2.5 * 1.0 * (1.0 + conf.bifaciale),
+        'ethylvinylacetate, foil*': 1.0017 * (1 + conf.bifaciale),
+        'glass fibre reinforced plastic, polyamide, injection moulded*':0.18781 * (1.0 - conf.bifaciale),
+        'polyethylene terephthalate, granulate, amorphous*':0.37297 * (1.0 - conf.bifaciale),
+        'polyvinylfluoride, film*':0.1104 * (1.0 - conf.bifaciale),
         'photovoltaic cell, multi-Si wafer*' : cell_adjusted,
     })
 
@@ -923,45 +923,45 @@ def _ensure_pv_system(conf):
     transport_sea = agb.findActivity('market for transport, freight, sea, container ship', db_name=conf.technosphere)
     # -
 
-    is_ground_system = 1.0 - p.roof_ratio
+    is_ground_system = 1.0 - conf.roof_ratio
     surface_module = 1.6 #Module surface in m²
-    P_module = p.module_efficiency * surface_module * 1000
-    surface  = p.P_install*1e3 / P_module * surface_module #total surface of the installation
+    P_module = conf.module_efficiency * surface_module * 1000
+    surface  = conf.P_install*1e3 / P_module * surface_module #total surface of the installation
 
     system_PV = agb.newActivity(db_name = conf.target_database,
                                 name = ACTIVITY_NAME,
                                 unit = "unit")
 
-    inverter_weight = p.inverter_weight_per_kW * p.P_install
-    elec_install_weight = p.electrical_installation_weight_per_kW * p.P_install
+    inverter_weight = conf.inverter_weight_per_kW * conf.P_install
+    elec_install_weight = conf.electrical_installation_weight_per_kW * conf.P_install
 
     # PV panel weigths 20kg/m²
     total_mass_tons = 1e-3 * ((surface / surface_module) * 20\
-                    + elec_install_weight + inverter_weight * p.lifetime / p.inverter_lifetime)
+                    + elec_install_weight + inverter_weight * conf.lifetime / conf.inverter_lifetime)
 
     system_PV.addExchanges({
         mounting_system : surface, #m²
 
         # Adding diesel burned in machine for site preparation
         # 7673 MJ were accounted for the 570 kWp power plant
-        diesel : is_ground_system * p.P_install/570.0 * 7673.0,
+        diesel : is_ground_system * conf.P_install/570.0 * 7673.0,
 
         # Number of equivalent unit of 3kW elec install
         elec_install : elec_install_weight,
 
-        inverter_per_kg : inverter_weight * p.lifetime / p.inverter_lifetime,
+        inverter_per_kg : inverter_weight * conf.lifetime / conf.inverter_lifetime,
         panel_adjusted : surface,
 
         #for engineers for feasability study (100 - 200 km)(includes installation, and dismantlement)
         transport_car : 300,
 
         #for maintenance
-        transport_van : 1e-3 * (inverter_weight) * 100 * p.lifetime / p.inverter_lifetime, #100 km?
+        transport_van : 1e-3 * (inverter_weight) * 100 * conf.lifetime / conf.inverter_lifetime, #100 km?
 
         #transport in ton-kilometer (freight in payload-distance)
-        transport_lorry : total_mass_tons * p.d_lorry,
-        transport_sea : total_mass_tons * p.d_sea,
-        transport_train : total_mass_tons * p.d_train
+        transport_lorry : total_mass_tons * conf.d_lorry,
+        transport_sea : total_mass_tons * conf.d_sea,
+        transport_train : total_mass_tons * conf.d_train
     })
 
     return system_PV
@@ -997,7 +997,7 @@ def _ensure_impact_model_per_kWp(conf):
         name = ACTIVITY_NAME,
         unit = "unit per kWp",
         exchanges = {
-            system_PV : 1.0 / p.P_install
+            system_PV : 1.0 / conf.P_install
         })
 
     return impact_per_kWp
@@ -1030,7 +1030,7 @@ def _ensure_impact_model_per_kWh(conf):
         db_name = conf.target_database,
         name = ACTIVITY_NAME,
         unit = "unit per kWh",
-        exchanges = {impact_per_kWp : 1.0 / (p.lifetime * p.kWhperkWp)})
+        exchanges = {impact_per_kWp : 1.0 / (conf.lifetime * conf.kWhperkWp)})
 
     return impact_per_kWh
 
