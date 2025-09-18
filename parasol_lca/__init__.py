@@ -1,6 +1,6 @@
 # coding=utf-8
 from . import activities
-from . import parameters
+from . import _parameters
 from . import activities
 
 class ParasolLCA:
@@ -54,9 +54,9 @@ class ParasolLCA:
 
     def __getattr__(self, name):
         handler_name = f"_ensure_{name}"
-        if not hasattr(parameters, handler_name):
+        if not hasattr(_parameters, handler_name):
             raise AttributeError(f"Attribute {name} not found in ParasolLCA!")
-        setattr(self, name, getattr(parameters, handler_name)(self))
+        setattr(self, name, getattr(_parameters, handler_name)(self))
         # Should work
         return getattr(self, name)
 
