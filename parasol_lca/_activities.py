@@ -44,8 +44,8 @@ def _ensure_electricity(conf):
 
     Parameters
     ----------
-    conf
-        see. help(Config)
+    conf: ParasolLCA
+        see. help(ParasolLCA)
 
     Returns
     -------
@@ -133,8 +133,8 @@ def _ensure_mounting(conf):
 
     Parameters
     ----------
-    conf
-        see. help(Config)
+    conf: ParasolLCA
+        see. help(ParasolLCA)
 
     Returns
     -------
@@ -212,8 +212,8 @@ def _ensure_electrical_installation(conf):
 
     Parameters
     ----------
-    conf
-        see. help(Config)
+    conf: ParasolLCA
+        see. help(ParasolLCA)
     """
     ACTIVITY_NAME = f'{conf.prefix}photovoltaics, electric installation per kg'
     act = agb.findActivity(ACTIVITY_NAME, db_name=conf.technosphere, single=False)
@@ -248,8 +248,8 @@ def _ensure_inverter(conf):
 
     Parameters
     ----------
-    conf
-        see. help(Config)
+    conf: ParasolLCA
+        see. help(ParasolLCA)
 
     Returns
     -------
@@ -368,8 +368,8 @@ def _ensure_metalisation(conf):
 
     Parameters
     ----------
-    conf
-        see. help(Config)
+    conf: ParasolLCA
+        see. help(ParasolLCA)
 
     Returns
     -------
@@ -411,8 +411,8 @@ def _ensure_silicon(conf):
 
     Parameters
     ----------
-    conf
-        see. help(Config)
+    conf: ParasolLCA
+        see. help(ParasolLCA)
 
     Returns
     -------
@@ -735,8 +735,8 @@ def _ensure_pv_cell_manufacturing(conf):
 
     Parameters
     ----------
-    conf
-        see. help(Config)
+    conf: ParasolLCA
+        see. help(ParasolLCA)
 
     Returns
     -------
@@ -800,8 +800,8 @@ def _ensure_pv_panel(conf):
 
     Parameters
     ----------
-    conf
-        see. help(Config)
+    conf: ParasolLCA
+        see. help(ParasolLCA)
 
     Returns
     -------
@@ -890,8 +890,8 @@ def _ensure_pv_system(conf):
 
     Parameters
     ----------
-    conf
-        see. help(Config)
+    conf: ParasolLCA
+        see. help(ParasolLCA)
 
     Returns
     -------
@@ -972,8 +972,8 @@ def _ensure_impact_model_per_kWp(conf):
 
     Parameters
     ----------
-    conf
-        see. help(Config)
+    conf: ParasolLCA
+        see. help(ParasolLCA)
 
     Returns
     -------
@@ -1008,8 +1008,8 @@ def _ensure_impact_model_per_kWh(conf):
 
     Parameters
     ----------
-    conf
-        see. help(Config)
+    conf: ParasolLCA
+        see. help(ParasolLCA)
 
     Returns
     -------
