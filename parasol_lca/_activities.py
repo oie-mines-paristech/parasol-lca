@@ -20,7 +20,6 @@
 
 import lca_algebraic as agb
 from lca_algebraic.base_utils import getActByCode
-from . import _parameters as p
 
 import brightway2 as bw
 from bw2data.utils import get_activity
